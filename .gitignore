@@ -1,3 +1,4 @@
 *.json
 *.pickle
 constant.py
+/__pycache__

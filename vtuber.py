@@ -10,7 +10,7 @@ database = constant.DB_NAME
 username = constant.DB_USER
 password = constant.DB_PASSWORD
 
-cnxn = pyodbc.connect('DRIVER={/usr/local/lib/libmsodbcsql.17.dylib};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
 
 def handle_datetimeoffset(dto_value):
     # ref: https://github.com/mkleehammer/pyodbc/issues/134#issuecomment-281739794

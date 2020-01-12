@@ -7,18 +7,20 @@ from upcoming_event import UpcomingEvent
 import datetime
 
 class YoutubeInfo():
+    def __init__(self, base_time):
+        self.base_time = base_time
+
     def get_info(self, vtuber):
         converted_updated_at = vtuber.updated_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'
         video_info = YoutubeAPI().get_video_info(channel_id=vtuber.channel_id, published_after=converted_updated_at)
-        updated_time = YoutubeInfo().get_details(video_info['items'], vtuber.updated_at, vtuber.calendar_id, vtuber.vtuber_id)
+        updated_time = self.get_details(video_info['items'], vtuber.updated_at, vtuber.calendar_id, vtuber.vtuber_id)
         while 'nextPageToken' in video_info:
             page_token = video_info['nextPageToken']
             video_info = YoutubeAPI().get_video_info(channel_id=vtuber.channel_id, page_token=page_token)
-            updated_time = YoutubeInfo().get_details(video_info['items'], updated_time, vtuber.calendar_id, vtuber.vtuber_id)
+            updated_time = self.get_details(video_info['items'], updated_time, vtuber.calendar_id, vtuber.vtuber_id)
         return updated_time
     
     def get_details(self, items, updated_time, calendar_id, vtuber_id):
-        base_time = updated_time
         tz = datetime.timezone(datetime.timedelta(hours=9))
         for item in items:
             if 'videoId' in item['id']:
@@ -36,10 +38,8 @@ class YoutubeInfo():
                         # カレンダーに書き込む時間は日本時間にする
                         event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
                         event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                        print(updated_time, end_time)
                         # 配信とアーカイブ公開の時間差が原因で重複して拾ってしまった動画はスルー
-                        if end_time <= base_time:
-                            print(updated_time, end_time)
+                        if end_time <= self.base_time:
                             continue
                         if end_time > updated_time:
                             updated_time = end_time
@@ -67,5 +67,7 @@ class YoutubeInfo():
         if len(video_details['items']) == 0:
             # 削除
             Scheduler().delete_event(calendar_id, event_id)
+            UpcomingEvent().delete(event_id)
+        elif 'actualEndTime' in video_details['items'][0]['liveStreamingDetails']:
             UpcomingEvent().delete(event_id)
         return

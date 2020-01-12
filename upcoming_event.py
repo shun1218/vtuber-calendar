@@ -7,7 +7,7 @@ server = constant.DB_SERVER
 database = constant.DB_NAME
 username = constant.DB_USER
 password = constant.DB_PASSWORD
-cnxn = pyodbc.connect('DRIVER={/usr/local/lib/libmsodbcsql.17.dylib};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
+cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
 cursor = cnxn.cursor()
 
 SELECT_BY_VIDEO_ID = "SELECT event_id, vtuber_id, video_id FROM upcoming_events WHERE video_id='{video_id}'"
