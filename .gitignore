@@ -1,8 +1,4 @@
 *.json
 *.pickle
-<<<<<<< HEAD
 constant.py
 /__pycache__
-=======
-constant.py
->>>>>>> origin/master
