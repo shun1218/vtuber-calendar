@@ -13,8 +13,12 @@ class VideoHistory():
         return values
 
     def insert_video_details(self, value):
+<<<<<<< HEAD
         if 'liveStreamingDetails' in value:
             result = collection.update({ 'id': value['id'] }, { '$set': { 'kind': value['kind'], 'etag': value['etag'], 'snippet': value['snippet'], 'liveStreamingDetails': value['liveStreamingDetails'] } }, True, False )
         else:
             result = collection.update({ 'id': value['id'] }, { '$set': { 'kind': value['kind'], 'etag': value['etag'], 'snippet': value['snippet'] } }, True, False )
+=======
+        result = collection.update({ 'id': value['id'] }, { '$set': { 'kind': value['kind'], 'etag': value['etag'], 'snippet': value['snippet'], 'liveStreamingDetails': value['liveStreamingDetails'] } }, True, False )
+>>>>>>> origin/master
         return result
