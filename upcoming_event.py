@@ -14,7 +14,7 @@ SELECT_BY_VIDEO_ID = "SELECT event_id, vtuber_id, video_id FROM upcoming_events 
 SELECT_BY_EVENT_ID = "SELECT * FROM upcoming_events WHERE event_id='{event_id}'"
 SELECT_BY_VTUBER_ID = "SELECT event_id, vtuber_id, video_id FROM upcoming_events WHERE vtuber_id={vtuber_id}"
 INSERT_SQL = "INSERT INTO upcoming_events (event_id, vtuber_id, video_id) VALUES ('{event_id}', {vtuber_id}, '{video_id}')"
-DELETE_BY_EVENT_ID = "DELETE FROM upcoming_events WHERE event_id='{event_id}"
+DELETE_BY_EVENT_ID = "DELETE FROM upcoming_events WHERE event_id='{event_id}'"
 
 class UpcomingEvent():
     def find_by_video_id(self, video_id):
