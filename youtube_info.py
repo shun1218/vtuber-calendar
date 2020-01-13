@@ -1,3 +1,4 @@
+# coding: utf-8
 from youtube_api import YoutubeAPI
 from video_history import VideoHistory
 from event import Event
