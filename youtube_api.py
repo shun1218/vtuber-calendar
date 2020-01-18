@@ -25,12 +25,12 @@ class YoutubeAPI():
             body = json.load(res)
             return body
 
-    def get_video_details(self, video_id):
+    def get_video_details(self, video_ids):
         url = 'https://www.googleapis.com/youtube/v3/videos'
         params = {
             'key': constant.YOUTUBE_API_KEY,
             'part': 'snippet, liveStreamingDetails',
-            'id': video_id
+            'id': video_ids
         }
 
         req = urllib.request.Request('{}?{}'.format(url, urllib.parse.urlencode(params)))

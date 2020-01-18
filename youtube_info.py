@@ -23,44 +23,48 @@ class YoutubeInfo():
     
     def get_details(self, items, updated_time, calendar_id, vtuber_id):
         tz = datetime.timezone(datetime.timedelta(hours=9))
+        video_ids = ''
         for item in items:
             if 'videoId' in item['id']:
-                video_details = YoutubeAPI().get_video_details(item['id']['videoId'])
-                VideoHistory().insert_video_details(value=video_details['items'][0])
-                print(video_details['items'][0]['snippet']['publishedAt'], video_details['items'][0]['snippet']['title'])
-                if 'liveStreamingDetails' in video_details['items'][0]:
-                    # スケジュール
-                    event = Event()
-                    event.summary = video_details['items'][0]['snippet']['title']
-                    event.description = 'https://www.youtube.com/watch?v=' + video_details['items'][0]['id']
-                    if 'actualEndTime' in video_details['items'][0]['liveStreamingDetails']:
-                        start_time = datetime.datetime.fromisoformat(video_details['items'][0]['liveStreamingDetails']['actualStartTime'][:-1] + '+00:00')
-                        end_time = datetime.datetime.fromisoformat(video_details['items'][0]['liveStreamingDetails']['actualEndTime'][:-1] + '+00:00')
-                        # カレンダーに書き込む時間は日本時間にする
-                        event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                        event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                        # 配信とアーカイブ公開の時間差が原因で重複して拾ってしまった動画はスルー
-                        if end_time <= self.base_time:
-                            continue
-                        if end_time > updated_time:
-                            updated_time = end_time
-                    elif 'actualStartTime' in video_details['items'][0]['liveStreamingDetails']:
-                        start_time = datetime.datetime.fromisoformat(video_details['items'][0]['liveStreamingDetails']['actualStartTime'][:-1] + '+00:00')
-                        end_time = start_time + datetime.timedelta(hours=1)
-                        event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                        event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                    else:
-                        start_time = datetime.datetime.fromisoformat(video_details['items'][0]['liveStreamingDetails']['scheduledStartTime'][:-1] + '+00:00')
-                        end_time = start_time + datetime.timedelta(hours=1)
-                        event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                        event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
-                    event_id = Scheduler().insert_event(event, calendar_id, video_details['items'][0]['id'])
-                    if not 'actualEndTime' in video_details['items'][0]['liveStreamingDetails']:
-                        upcoming_event = UpcomingEvents()
-                        upcoming_event.event_id = event_id
-                        upcoming_event.vtuber_id = vtuber_id
-                        upcoming_event.video_id = video_details['items'][0]['id']
-                        UpcomingEvent().insert(upcoming_event)
+                video_ids += item['id']['videoId']
+                video_ids += ', '
+        video_details = YoutubeAPI().get_video_details(video_ids[:-2])
+        for video_item in video_details['items']:
+            VideoHistory().insert_video_details(value=video_item)
+            print(video_item['snippet']['publishedAt'], video_item['snippet']['title'])
+            if 'liveStreamingDetails' in video_item:
+                # スケジュール
+                event = Event()
+                event.summary = video_item['snippet']['title']
+                event.description = 'https://www.youtube.com/watch?v=' + video_item['id']
+                if 'actualEndTime' in video_item['liveStreamingDetails']:
+                    start_time = datetime.datetime.fromisoformat(video_item['liveStreamingDetails']['actualStartTime'][:-1] + '+00:00')
+                    end_time = datetime.datetime.fromisoformat(video_item['liveStreamingDetails']['actualEndTime'][:-1] + '+00:00')
+                    # カレンダーに書き込む時間は日本時間にする
+                    event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                    event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                    # 配信とアーカイブ公開の時間差が原因で重複して拾ってしまった動画はスルー
+                    if end_time <= self.base_time:
+                        continue
+                    if end_time > updated_time:
+                        updated_time = end_time
+                elif 'actualStartTime' in video_item['liveStreamingDetails']:
+                    start_time = datetime.datetime.fromisoformat(video_item['liveStreamingDetails']['actualStartTime'][:-1] + '+00:00')
+                    end_time = start_time + datetime.timedelta(hours=1)
+                    event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                    event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                else:
+                    start_time = datetime.datetime.fromisoformat(video_item['liveStreamingDetails']['scheduledStartTime'][:-1] + '+00:00')
+                    end_time = start_time + datetime.timedelta(hours=1)
+                    event.start_datetime = start_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                    event.end_datetime = end_time.astimezone(tz).strftime('%Y-%m-%dT%H:%M:%S')
+                event_id = Scheduler().insert_event(event, calendar_id, video_item['id'])
+                if not 'actualEndTime' in video_item['liveStreamingDetails']:
+                    upcoming_event = UpcomingEvents()
+                    upcoming_event.event_id = event_id
+                    upcoming_event.vtuber_id = vtuber_id
+                    upcoming_event.video_id = video_item['id']
+                    UpcomingEvent().insert(upcoming_event)
         return updated_time
     
     def check_video(self, calendar_id, event_id, video_id):
